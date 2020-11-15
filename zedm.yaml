@@ -1,0 +1,6 @@
+name: zedm
+channels:
+  - conda-forge
+  - anaconda
+  - defaults
+prefix: /home/iasl/anaconda3/envs/zedm

@@ -32,11 +32,15 @@ python convert_svo.py [inpu/svofile.svo] [output/avifile.avi or directory] [mode
 # depth data : float32, (height, width)
 # pcd data : float32, (height, width, xyza # a is color of pixel)
 ```
-##### load pcd file example
+#### write and load depth file
 ```bash
-import numpy as np
-np.array([1,2,3]).tofile("a.bin")
-print np.fromfile("a.bin", dtpye=np.float32)
+np.savetxt("a.txt", np.array([1,2,3])) # write
+np.loadtxt("a.txt",delimiter=",") # load
+```
+##### write and load pcd file 
+```bash
+np.array([1,2,3]).tofile("a.bin") # write
+np.fromfile("a.bin", dtpye=np.float32) # load
 ```
 
 ## Test from ZED mini
