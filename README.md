@@ -1,6 +1,6 @@
-# ZED api for capturing and recording images and depth.
+# 3D object detection through ZED api for capturing and recording images and depth.
 
-This repo provides a implementation of ZED mini api
+This repo provides a implementation of ZED mini image processing and object detection algo(basic).
 
 ## Usage
 
