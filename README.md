@@ -2,27 +2,32 @@
 
 This repo provides a implementation of ZED mini image processing and object detection algo(basic).
 
+## Install
+
+### Conda
+```bash
+conda env create -f zedm.yaml
+conda activate yolo
+```
+
 ## Usage
 
 #### image_capture.py
-
 ```bash
 python image_capture.py
+#press "r" for catpure the image
+#(file path : ./pngfile/xxxx.png)
 ```
-press "r" for catpure the image
-(file path : ./pngfile/xxxx.png)
 
 #### video_capture.py
-
 ```bash
 python video_capture.py [outputfile.svo]
+#press "r" for recording the image
+#press "q" to stop recording
+#(output file name must be xxxx.svo)
 ```
-press "r" for recording the image
-press "q" to stop recording
-(output file name must be xxxx.svo)
 
 #### convert_svo_into_avi.py
-
 ```bash
 python convert_svo.py [inpu/svofile.svo] [output/avifile.avi or directory] [mode]
 
@@ -32,12 +37,14 @@ python convert_svo.py [inpu/svofile.svo] [output/avifile.avi or directory] [mode
 # depth data : float32, (height, width)
 # pcd data : float32, (height, width, xyza # a is color of pixel)
 ```
-#### write and load depth file
+
+#### write and load text file
 ```bash
 np.savetxt("a.txt", np.array([1,2,3])) # write
 np.loadtxt("a.txt",delimiter=",") # load
 ```
-##### write and load pcd file 
+
+##### write and load binary file 
 ```bash
 np.array([1,2,3]).tofile("a.bin") # write
 np.fromfile("a.bin", dtpye=np.float32) # load

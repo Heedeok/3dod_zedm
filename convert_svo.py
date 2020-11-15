@@ -189,7 +189,7 @@ def main():
                 filename1 = output_path / ("left%s.png" % str(svo_position).zfill(6))
                 filename2 = output_path / (("right%s.png" if app_type == AppType.LEFT_AND_RIGHT
                                            else "depth%s.png") % str(svo_position).zfill(6))
-                filename3 = output_path / (("depth_data%s.png") % str(svo_position).zfill(6))
+                filename3 = output_path / (("depth_data%s.txt") % str(svo_position).zfill(6))
                 filename4 = output_path / (("pcd_data%s.bin") % str(svo_position).zfill(6))
                
                 if app_type == AppType.LEFT_AND_DEPTH:
@@ -203,8 +203,10 @@ def main():
                     # Save depth images (convert to uint16)
                     cv2.imwrite(str(filename2), depth_image.get_data().astype(np.uint16))
                 elif app_type == AppType.DEPTH_DATA :
-                    # Saver depth value (float 32) 별의미 없구만...
-                    cv2.imwrite(str(filename3), depth_image.get_data())
+                    # Saver depth value (float 32)
+                    fout = open(filename3, 'w')
+                    np.savetxt(fout, depth_image.get_data())
+                    fout.close()
                 elif app_type == AppType.POINT_CLOUD :
                     # Saver pcd value - XYZA (A=color) (float 32)
                     point_cloud.get_data().tofile(filename4)
