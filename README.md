@@ -44,7 +44,7 @@ np.savetxt("a.txt", np.array([1,2,3])) # write
 np.loadtxt("a.txt",delimiter=",") # load
 ```
 
-##### write and load binary file 
+#### write and load binary file 
 ```bash
 np.array([1,2,3]).tofile("a.bin") # write
 np.fromfile("a.bin", dtpye=np.float32) # load
