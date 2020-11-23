@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 from pathlib import Path
 import enum
+import pcl
 
 
 class AppType(enum.Enum):
@@ -138,8 +139,8 @@ def main():
             exit()
     
     rt_param = sl.RuntimeParameters()
-    rt_param.sensing_mode = sl.SENSING_MODE.FILL
-    # rt_param.sensing_mode = sl.SENSING_MODE.STANDARD
+    rt_param.sensing_mode = sl.SENSING_MODE.STANDARD # for computing
+    # rt_param.sensing_mode = sl.SENSING_MODE.FILL # for displaying
 
     # Start SVO conversion to AVI/SEQUENCE
     sys.stdout.write("Converting SVO... Use Ctrl-C to interrupt conversion.\n")
@@ -164,7 +165,7 @@ def main():
             elif app_type == AppType.DEPTH_DATA:
                 zed.retrieve_measure(depth_image, sl.MEASURE.DEPTH)
             elif app_type == AppType.POINT_CLOUD:
-                zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA)
+                zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA) # data type =F32_C4
 
             if output_as_video:
 
@@ -190,7 +191,7 @@ def main():
                 filename2 = output_path / (("right%s.png" if app_type == AppType.LEFT_AND_RIGHT
                                            else "depth%s.png") % str(svo_position).zfill(6))
                 filename3 = output_path / (("depth_data%s.txt") % str(svo_position).zfill(6))
-                filename4 = output_path / (("pcd_data%s.bin") % str(svo_position).zfill(6))
+                filename4 = output_path / (("pcd_data%s.txt") % str(svo_position).zfill(6))
                
                 if app_type == AppType.LEFT_AND_DEPTH:
                     # Save Left images
@@ -210,7 +211,10 @@ def main():
                 elif app_type == AppType.POINT_CLOUD :
                     # Saver pcd value - XYZA (A=color) (float 32)
                     point_cloud.get_data().tofile(filename4)
-
+                    print(point_cloud.get_data)
+                    # print('get_data [0] : {}, [1]:{}, [2]:{}, [3]:{}'.format(point_cloud.get_data[0], point_cloud.get_data[1], point_cloud.get_data[2], point_cloud.get_data[3]))
+                    pc_value = point_cloud.get_value(1,1)
+                    print(point_cloud.get_value())
 
 
             # Display progress
