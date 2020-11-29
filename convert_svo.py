@@ -191,7 +191,7 @@ def main():
                 filename2 = output_path / (("right%s.png" if app_type == AppType.LEFT_AND_RIGHT
                                            else "depth%s.png") % str(svo_position).zfill(6))
                 filename3 = output_path / (("depth_data%s.txt") % str(svo_position).zfill(6))
-                filename4 = output_path / (("pcd_data%s.txt") % str(svo_position).zfill(6))
+                filename4 = output_path / (("pcd_data%s.pcd") % str(svo_position).zfill(6))
                
                 if app_type == AppType.LEFT_AND_DEPTH:
                     # Save Left images
@@ -210,11 +210,9 @@ def main():
                     fout.close()
                 elif app_type == AppType.POINT_CLOUD :
                     # Saver pcd value - XYZA (A=color) (float 32)
-                    point_cloud.get_data().tofile(filename4)
-                    print(point_cloud.get_data)
-                    # print('get_data [0] : {}, [1]:{}, [2]:{}, [3]:{}'.format(point_cloud.get_data[0], point_cloud.get_data[1], point_cloud.get_data[2], point_cloud.get_data[3]))
-                    pc_value = point_cloud.get_value(1,1)
-                    print(point_cloud.get_value())
+                    # point_cloud.get_data().tofile(filename4)
+                    pc = pcl.PointCloud(point_cloud.get_data())
+                    pc.save(pc, filename4)
 
 
             # Display progress
