@@ -13,6 +13,33 @@ import math
 width = 1920
 height = 1080
 
+def extract_max_and_min_index(x1, y1, x2, y2, depth_map):
+    '''Extract max and min index for numpy ndarray'''
+
+    target_map = depth_map[x1 : x2, y1 : y2]
+
+    # axis=1 means the max index along x line
+    max_xline = np.nanargmax(target_map, axis =1)
+    min_xline = np.nanargmin(target_map, axis =1)
+
+    tmp = 0 
+    max_index = [0, 0]
+    min_index = [0, 0]
+
+    for i, ind in enumerate(max_xline):
+        if target_map[i][ind] >= tmp:
+            max_index[0] = i + x1
+            max_index[1] = ind + y1
+
+    tmp = target_map[max_index[0]-x1][max_index[1]-y1]
+
+    for i, ind in enumerate(min_xline):
+        if target_map[i][ind] <= tmp:
+            min_index[0] = i + x1
+            min_index[1] = ind + y1
+
+    return max_index, min_index
+
 def progress_bar(percent_done, bar_length=50):
     done_length = int(bar_length * percent_done / 100)
     bar = '=' * done_length + '-' * (bar_length - done_length)
@@ -21,25 +48,24 @@ def progress_bar(percent_done, bar_length=50):
 
 def extract_center_coordi_basic(center_index, depth_map):
     ''' Extract center index which has max depth in depth map
-        in this function, depth map is target depth map 
+        in this function, depth map is target 2D boxed depth map 
     '''
 
     frame_idx, x1, y1, x2, y2 = center_index
 
-    box = depth_map[x1 : x2, y1 : y2]
-    max_depth = np.max(box)
-    max_index = np.unravel_index(box.nanargmax(), box.shape)
-    min_depth = np.min(box)
-    min_index = np.unravel_index(box.nanargmin(), box.shape)
+    max_index, min_index = extract_max_and_min_index(x1, y1, x2, y2, depth_map)
 
-    center_x = (x1 + x2) // 2 
-    center_y = (y1 + y2) // 2
-    center_z = (max_depth + min_depth) / 2
+    max_depth = depth_map[max_index[0]][max_index[1]]
+    min_depth = depth_map[min_index[0]][min_index[1]]
     
-    return center_x, center_y, center_z 
+    center_depth = (max_depth + min_depth)/2
+    obj_width = y2 -y1
+    obj_height = x2 -x1
+
+    return center_depth, obj_height, obj_width
 
 def transform_box2D_to_index(target_coordi):
-    ''' Transform target coordi (x,y (0~1 float32)) to numpy index and frame number
+    ''' Transform target coordi file (frame number ,x1, y1, x2, y2) to numpy index
         frame_number, x1_ind, y1_ind, x2_ind, y2_ind
     '''
     
@@ -52,7 +78,7 @@ def transform_box2D_to_index(target_coordi):
         
         # target 이 비어있는 경우 고려해주어야 함
         if count != int(line.split()[0]):
-            coordi_index.extend([count,0,0,height-1, width-1])
+            coordi_index.extend([count,0,0,height-1, width-1]) # if frame empty, return entire pixel index
             count += 1
             continue
 
@@ -80,82 +106,49 @@ def transform_box2D_to_index(target_coordi):
     
     return np.array(coordi_index).reshape(len(coordi_index)//5,5) 
 
-def transform_pcd_bin_to_pcl_format(pcd_data_file):
-    pcd_data = pypcd.PointCloud.from_path(pcd_data_file)
-    pcd_data.pc_data['x'] -= pcd_data.pc_data['x'].mean()
-    pcd_data.save_pcd('./testfile/test.pcd', compression='binary_compressed')
-
-    pcd_data = np.fromfile('./testfile/test.pcd', dtype=np.float32)
-    return pcd_data
-
+def extract_3d_object_detection_basic():
+    return True
 
 
 def main():
    
-    depth_float32 = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/depthfile/depth_data000001.txt"
-    # target_coordi = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/avifile/test_target_coordi.txt"
-    # left_img = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/pngfile/left000001.png"   
-    liadr_data = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/pcdfile/pcd_data000001.bin"
-    test_data = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/LidarObstacleDetection/src/sensors/data/pcd/data_1/0000000000.pcd"      
+    depth_data = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/depthfile/depth_data000001.txt"
+    target_coordi = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/avifile/test_target_coordi.txt"
+    left_img = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/pngfile/left000001.png"   
+    # liadr_data = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/pcdfile/pcd_data000001.bin"    
 
-    depth_float32 = np.loadtxt(depth_float32, dtype=np.float32)
-    # left_img = cv2.imread(left_img, cv2.IMREAD_UNCHANGED)
-    pcd_data = np.fromfile(liadr_data, dtype=np.float32)
-    test_data = np.fromfile(test_data, dtype=np.float32)
+    depth_data = np.loadtxt(depth_data, dtype=np.float32)
+    left_img = cv2.imread(left_img, cv2.IMREAD_UNCHANGED)
+    # pcd_data = np.fromfile(liadr_data, dtype=np.float32)
 
 
     print('=====Zed depth====')
-    print('lidar type : {}'.format(depth_float32.dtype))
-    print('lidar shape : {}'.format(depth_float32.shape))
-    print('max : {}, min : {}'.format(depth_float32.max(), depth_float32.min()))
-    print('depth[100][100] : {}'.format(depth_float32[100][100]))
-    print(depth_float32)
-
-    print('====Zed pcd=====')
-    print('lidar type : {}'.format(pcd_data.dtype))
-    print('lidar shape : {}'.format(pcd_data.shape))
-    pcd_data = pcd_data.reshape(height, width, 4)
-    print('lidar new shape : {}'.format(pcd_data.shape))
-    print('max : {}, min : {}'.format(pcd_data.max(), pcd_data.min()))
-    print('pcd[100][100] : {}'.format(pcd_data[100][100]))
-    # pcd_data = pcd_data.astype(np.float64)
-    # print(pcd_data.dtype)
-    # print(pcd_data[3])
-  
-
-    print('=====Lidar obstacle====')
-    print('lidar type : {}'.format(test_data.dtype))
-    print('lidar shape : {}'.format(test_data.shape))
-    print('max : {}, min : {}'.format(test_data.max(), test_data.min()))
-
-
-
-
-
-
-
-
-
-
+    print('deptrh type : {}'.format(depth_data.dtype))
+    print('lidar shape : {}'.format(depth_data.shape))
+    print('max : {}, min : {}'.format(depth_data.max(), depth_data.min()))
+    print('depth[100][100] : {}'.format(depth_data[100][100]))
+    # print(depth_data)
 
 
 
     # extract box index
-    # center_index = transform_box2D_to_index(target_coordi)
+    center_index = transform_box2D_to_index(target_coordi)
     
-    # frame_idx, x1, y1, x2, y2 = center_index[0]
+    frame_idx, x1, y1, x2, y2 = center_index[0]
+    print(center_index[0])
 
-    # # extract center coordinate
-    # center_x, center_y, center_z = extract_center_coordi_basic(center_index[0], depth_float32)
+    # extract center coordinate
+    center_depth, obj_height, obj_width = extract_center_coordi_basic(center_index[0], depth_data)
+    print(center_depth, obj_height, obj_width)
 
-    # cut_img = np.zeros((1080, 1920,4)).astype(np.uint8)
-    # cut_img[x1 : x2, y1 : y2, :] = left_img[x1 : x2, y1 : y2, :]
+    cut_img = np.zeros((1080, 1920,4)).astype(np.uint8)
+    cut_img[x1 : x2, y1 : y2, :] = left_img[x1 : x2, y1 : y2, :]
 
-    # cut_img[center_x, center_y,:] = [255, 255, 255, 0]
+    cut_img[ (x2+x1)//2, (y2+y1)//2,:] = [0, 0, 255, 0]
 
-    # cv2.imshow('Unchange', cut_img)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    cv2.imshow('Unchange', cut_img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     
 if __name__ == '__main__':
     main()
