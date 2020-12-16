@@ -4,7 +4,6 @@ import numpy as np
 import cv2
 from pathlib import Path
 import enum
-import pcl
 
 
 class AppType(enum.Enum):
@@ -191,7 +190,7 @@ def main():
                 filename2 = output_path / (("right%s.png" if app_type == AppType.LEFT_AND_RIGHT
                                            else "depth%s.png") % str(svo_position).zfill(6))
                 filename3 = output_path / (("depth_data%s.txt") % str(svo_position).zfill(6))
-                filename4 = output_path / (("pcd_data%s.pcd") % str(svo_position).zfill(6))
+                filename4 = output_path / (("pcd_data%s.bin") % str(svo_position).zfill(6))
                
                 if app_type == AppType.LEFT_AND_DEPTH:
                     # Save Left images
@@ -210,9 +209,7 @@ def main():
                     fout.close()
                 elif app_type == AppType.POINT_CLOUD :
                     # Saver pcd value - XYZA (A=color) (float 32)
-                    # point_cloud.get_data().tofile(filename4)
-                    pc = pcl.PointCloud(point_cloud.get_data())
-                    pc.save(pc, filename4)
+                    point_cloud.get_data().tofile(filename4)
 
 
             # Display progress

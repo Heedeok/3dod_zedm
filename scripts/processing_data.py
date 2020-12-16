@@ -5,6 +5,10 @@ import cv2
 import os
 import re
 import pypcd
+import math
+
+'''for check nan float
+    math.isnan(object)'''
 
 width = 1920
 height = 1080
@@ -24,9 +28,9 @@ def extract_center_coordi_basic(center_index, depth_map):
 
     box = depth_map[x1 : x2, y1 : y2]
     max_depth = np.max(box)
-    max_index = np.unravel_index(box.argmax(), box.shape)
+    max_index = np.unravel_index(box.nanargmax(), box.shape)
     min_depth = np.min(box)
-    min_index = np.unravel_index(box.argmin(), box.shape)
+    min_index = np.unravel_index(box.nanargmin(), box.shape)
 
     center_x = (x1 + x2) // 2 
     center_y = (y1 + y2) // 2
@@ -88,46 +92,41 @@ def transform_pcd_bin_to_pcl_format(pcd_data_file):
 
 def main():
    
-    # depth_float32 = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/depthfile/depth_data000001.txt"
+    depth_float32 = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/depthfile/depth_data000001.txt"
     # target_coordi = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/avifile/test_target_coordi.txt"
     # left_img = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/pngfile/left000001.png"   
     liadr_data = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/pcdfile/pcd_data000001.bin"
     test_data = "/home/iasl/object_detection/yolo_tf2/3dod_zedm/LidarObstacleDetection/src/sensors/data/pcd/data_1/0000000000.pcd"      
 
-    # depth_float32 = np.loadtxt(depth_float32, dtype=np.float32)
+    depth_float32 = np.loadtxt(depth_float32, dtype=np.float32)
     # left_img = cv2.imread(left_img, cv2.IMREAD_UNCHANGED)
     pcd_data = np.fromfile(liadr_data, dtype=np.float32)
     test_data = np.fromfile(test_data, dtype=np.float32)
 
-    print('====Zed depth=====')
+
+    print('=====Zed depth====')
+    print('lidar type : {}'.format(depth_float32.dtype))
+    print('lidar shape : {}'.format(depth_float32.shape))
+    print('max : {}, min : {}'.format(depth_float32.max(), depth_float32.min()))
+    print('depth[100][100] : {}'.format(depth_float32[100][100]))
+    print(depth_float32)
+
+    print('====Zed pcd=====')
     print('lidar type : {}'.format(pcd_data.dtype))
     print('lidar shape : {}'.format(pcd_data.shape))
-    # pcd_data = pcd_data.reshape(height, width, 4)
-    # print('lidar shape : {}'.format(pcd_data.shape))
+    pcd_data = pcd_data.reshape(height, width, 4)
+    print('lidar new shape : {}'.format(pcd_data.shape))
     print('max : {}, min : {}'.format(pcd_data.max(), pcd_data.min()))
+    print('pcd[100][100] : {}'.format(pcd_data[100][100]))
     # pcd_data = pcd_data.astype(np.float64)
     # print(pcd_data.dtype)
     # print(pcd_data[3])
-    print('[0]:{}, [1]:{}, [2]:{}, [3]:{}'.format(pcd_data[0], pcd_data[1], pcd_data[2], pcd_data[3]))
-    nan = pcd_data[0]
-    if pcd_data[0]==nan:
-        pcd_data[0] = 0.0
-    print(pcd_data[0])
-    # pcd_data = transform_pcd_bin_to_pcl_format(pcd_data)
-    # print('new lidar type : {}'.format(pcd_data.dtype))
-    # print('new lidar shape : {}'.format(pcd_data.shape))
-    # print('max : {}, min : {}'.format(pcd_data.max(), pcd_data.min()))
-
+  
 
     print('=====Lidar obstacle====')
     print('lidar type : {}'.format(test_data.dtype))
     print('lidar shape : {}'.format(test_data.shape))
     print('max : {}, min : {}'.format(test_data.max(), test_data.min()))
-    print('[0]:{}, [1]:{}, [2]:{}, [3]:{}'.format(test_data[-4], test_data[-3], test_data[-2], test_data[-1]))
-    print(test_data[-1].dtype)
-
-
-
 
 
 
